@@ -158,6 +158,17 @@
                 </div>
             </div>
             
+            <!-- NEW: Templates Dropdown -->
+            <div class="mb-4">
+                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 block">Қалыптар (Examples)</label>
+                <select id="templateSelect" onchange="loadTemplate()" class="w-full bg-gray-900 border border-gray-800 text-gray-300 text-xs rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 block">
+                    <option value="">-- Мысалды таңдаңыз --</option>
+                    <option value="collision">Мемлекеттік сатып алу (Қайшылық)</option>
+                    <option value="corruption">Заң жобасы (Жемқорлық қаупі)</option>
+                    <option value="math">Еңбек кодексі (Мерзімдік қате)</option>
+                </select>
+            </div>
+
             <textarea id="textInput" 
                 class="w-full p-4 bg-gray-900 text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none mb-4 custom-scrollbar text-sm"
                 rows="8" 
@@ -322,6 +333,19 @@
             }
         }
 
+        function loadTemplate() {
+            const select = document.getElementById("templateSelect");
+            const input = document.getElementById("textInput");
+            const templates = {
+                collision: "1-бап. Қоғамдық орындарда, оның ішінде саябақтарда шылым шегуге рұқсат етіледі.\n2-бап. Мемлекеттік маңызы бар саябақтар мен скверлерде шылым шегуге қатаң тыйым салынады.",
+                corruption: "3-бап. Тиісті органдар қажет болған жағдайда қосымша тексеру тағайындай алады.\n4-бап. Тексеру жүргізу мерзімі инспектордың өз қалауы бойынша ұзартылуы мүмкін.",
+                math: "5-бап. Конкурсқа қатысу үшін өтінімдер басталуға 5 күн қалғанда берілуі тиіс.\n6-бап. Өтінімдерді қарау және шешім қабылдау мерзімі 10 жұмыс күнін құрайды."
+            };
+            if (select.value && templates[select.value]) {
+                input.value = templates[select.value];
+            }
+        }
+
         async function analyzeText() {
             const text = document.getElementById("textInput").value;
             if (!text) return alert("Пожалуйста, введите текст для анализа.");
@@ -342,9 +366,19 @@
 
                 // NEW: Show Summary Card
                 const summaryCard = document.getElementById("summaryCard");
+                const riaVal = result.ria_score || 0;
                 document.getElementById("summaryText").innerText = result.summary || "";
-                document.getElementById("riaValue").innerText = result.ria_score || 0;
-                document.getElementById("riaBar").style.width = (result.ria_score || 0) + "%";
+                document.getElementById("riaValue").innerText = riaVal;
+                
+                const riaBar = document.getElementById("riaBar");
+                riaBar.style.width = riaVal + "%";
+                
+                // Color-code the RIA bar
+                riaBar.className = "h-full transition-all duration-1000";
+                if(riaVal > 80) riaBar.classList.add("bg-emerald-500");
+                else if(riaVal > 50) riaBar.classList.add("bg-amber-500");
+                else riaBar.classList.add("bg-red-500");
+
                 summaryCard.classList.remove("hidden");
 
                 // Обновляем Левую Панель (Global Results)
