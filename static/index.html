@@ -145,6 +145,18 @@
                 Legal Genome
                  <br><span class="text-xs text-gray-400 font-normal mt-1 block tracking-wider" style="-webkit-text-fill-color: #9ca3af;">AI NEURAL GRAPH ANALYSIS</span>
             </h1>
+
+            <!-- NEW: Executive Summary Card -->
+            <div id="summaryCard" class="hidden mb-6 p-4 bg-gradient-to-br from-indigo-900/40 to-purple-900/30 rounded-xl border border-indigo-500/30 shadow-lg backdrop-blur-md">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-[10px] font-bold text-indigo-300 uppercase tracking-[0.2em]">Executive Summary</h2>
+                    <div class="text-[10px] bg-indigo-500/20 px-2 py-0.5 rounded-full text-indigo-300 border border-indigo-500/30">RIA: <span id="riaValue">0</span>%</div>
+                </div>
+                <p id="summaryText" class="text-xs text-gray-200 leading-relaxed italic mb-1"></p>
+                <div class="h-1 w-full bg-gray-800 rounded-full mt-3 overflow-hidden">
+                    <div id="riaBar" class="h-full bg-indigo-500 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+            </div>
             
             <textarea id="textInput" 
                 class="w-full p-4 bg-gray-900 text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none mb-4 custom-scrollbar text-sm"
@@ -327,6 +339,13 @@
                 });
 
                 const result = await response.json();
+
+                // NEW: Show Summary Card
+                const summaryCard = document.getElementById("summaryCard");
+                document.getElementById("summaryText").innerText = result.summary || "";
+                document.getElementById("riaValue").innerText = result.ria_score || 0;
+                document.getElementById("riaBar").style.width = (result.ria_score || 0) + "%";
+                summaryCard.classList.remove("hidden");
 
                 // Обновляем Левую Панель (Global Results)
                 document.getElementById("contradictionsList").innerHTML = wrapFeedback("contradictionsList", "contradiction", result.contradictions);

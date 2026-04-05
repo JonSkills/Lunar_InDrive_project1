@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # =================================================================================
 # ЛОКАЛЬНЫЕ ML МОДЕЛИ (ОФФЛАЙН АРХИТЕКТУРА - LEGAL GENOME PROJECT)
-# ГИБРИДТІ ЖҮЙЕ: Статистика + Білім базасы + Кері байланыс + Рекомендациялар
+# ГИБРИДТІ ЖҮЙЕ: Статистика + Білім базасы + Кері байланыс + Рекомендациялар + RIA
 # =================================================================================
 
 GLOBAL_LEGAL_KNOWLEDGE = [
@@ -33,6 +33,8 @@ def analyze_text(text: str):
             "duplicates": "-",
             "issues": "-",
             "recommendations": [],
+            "summary": "Мәтін тым қысқа.",
+            "ria_score": 0,
             "law_score": 0,
             "explanation": "Слишком короткий текст.",
             "note": "Пайдаланушыға ескерту: Мәтінді толықтырыңыз.",
@@ -73,8 +75,8 @@ def analyze_text(text: str):
                 permit = ["разрешен", "вправе", "рұқсат", "құқылы"]
                 forbid = ["запрещен", "тыйым", "болмайды"]
                 
-                if (any(w in s1_low for w in permit) and any(w in s2_low for forbid)) or \
-                   (any(w in s1_low for w in forbid) and any(w in s2_low for permit)):
+                if (any(w in s1_low for w in permit) and any(w in s2_low for w in forbid)) or \
+                   (any(w in s1_low for w in forbid) and any(w in s2_low for w in permit)):
                     if score > 0.03:
                         contradictions.append(f"- ҚАЙШЫЛЫҚ: Норма {i+1} мен {j+1}")
                         edges.append({"from": i, "to": j, "color": "#ef4444", "width": 4})
@@ -95,13 +97,22 @@ def analyze_text(text: str):
             fb = json.load(f)
             score += (len([x for x in fb if not x['is_correct']]) * 2)
 
+    # NEW: RIA Score (Regulatory Impact Analysis) - Симуляция сараптамалық бағалау
+    ria_score = score * 0.95 # Жүйелік реттеу сапасы
+    summary = f"Жалпы сараптама: Мәтінде {len(contradictions)} қайшылық және {len(issues)} жемқорлық қаупі табылды. "
+    if score > 80: summary += "Заң жобасының сапасы жоғары, қолдануға ұсынылады."
+    elif score > 50: summary += "Орташа қауіп деңгейі. Түзетулер енгізу қажет."
+    else: summary += "Сын көтермейді. Түбегейлі қайта қарау ұсынылады."
+
     return {
         "contradictions": "\n\n".join(contradictions) if contradictions else "Табылмады.",
         "duplicates": "\n\n".join(duplicates) if duplicates else "Жоқ.",
         "issues": "\n\n".join(list(issues)) if issues else "Таза.",
         "recommendations": list(set(recommendations)),
+        "summary": summary,
+        "ria_score": int(ria_score),
         "law_score": int(max(0, min(100, score))),
-        "explanation": "Hybrid AI Mode: Статистикалық талдау + Global Legal Base + Конструктивті ұсыныстар.",
-        "note": "🚀 Жүйе эксперттік ұсыныстарды сгенерирледі.",
+        "explanation": "Hybrid AI Mode: Статистикалық талдау + Global Legal Base + Конструктивті ұсыныстар + RIA Сараптамасы.",
+        "note": "🚀 Жүйе эксперттік ұсыныстарды және RIA сараптамасын сгенерирледі.",
         "graph_data": {"nodes": nodes, "edges": edges}
     }
